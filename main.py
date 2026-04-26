@@ -3,6 +3,7 @@ from code.entsoe_download import load_data_from_entsoe
 from matplotlib import pyplot as plt
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 TIME_ZONE = "Europe/Brussels"
 FREQUENCY = "h"
@@ -19,13 +20,27 @@ def main(download_data: bool = True):
 
     electricity_prices = get_electricity_prices(download_data)
     fuel_prices = get_fuel_prices()
+    all_prices = pd.concat([electricity_prices, fuel_prices], axis=1)
 
     st.markdown("# Dashboard Content")
 
-    time_range = setup_and_get_time_range_slider()
+    fig = px.line(
+        all_prices,
+    )
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Price (EUR/MWh)",
+        legend_title_text="Commodity",
+        hovermode="closest", 
+        dragmode=False,
+        title="Price comparison"
+    )
+    fig.update_xaxes(rangeslider_visible=True)
 
-    st.line_chart(data=electricity_prices)
-    st.line_chart(data=fuel_prices)
+    event = st.plotly_chart(
+        fig,
+        on_select="rerun"
+    )
 
     buy_window = st.slider(
         "Buy window",
@@ -44,11 +59,11 @@ def get_electricity_prices(download_data):
     if download_data:
         electricity_prices = load_data_from_entsoe()
         logging.info("Data downloaded successfully.")
-    
-    electricity_prices = (electricity_prices
-                          .reindex(st.session_state.time_index)
-                          .interpolate(method="linear"))
-    electricity_prices = electricity_prices.to_frame(name="electricity")
+
+    electricity_prices = electricity_prices.reindex(
+        st.session_state.time_index
+    ).interpolate(method="linear")
+    electricity_prices = electricity_prices.to_frame(name="Strom")
     return electricity_prices
 
 
@@ -64,9 +79,17 @@ def get_fuel_prices():
     fuel = fuel.tz_localize(TIME_ZONE)
     fuel = fuel.resample(FREQUENCY).mean()
 
-    fuel = (fuel
-            .reindex(st.session_state.time_index)
-            .interpolate(method="linear"))
+    fuel = fuel.reindex(st.session_state.time_index).interpolate(method="linear")
+
+    kwh_per_l = {
+        "Diesel": 9.7,
+        "Eurosuper": 8.9,
+        "Normal": 8.9,
+        "Super Plus": 8.9,
+    }
+
+    for col, kwh_l in kwh_per_l.items():
+        fuel[col] = fuel[col] * (1000.0 / kwh_l)
 
     return fuel
 
@@ -83,26 +106,6 @@ def initialize_session():
             end=st.session_state.time_range[1],
             freq=FREQUENCY,
         )
-
-def setup_and_get_time_range_slider():
-    time_range = st.slider(
-        "Time range",
-        min_value=MIN_TIME.to_pydatetime(),
-        max_value=MAX_TIME.to_pydatetime(),
-        value=(MIN_TIME.to_pydatetime(), MAX_TIME.to_pydatetime()),
-        format=DATE_FORMAT,
-    )
-
-    st.session_state.time_range = [
-        pd.Timestamp(time_range[0]).tz_convert(tz=TIME_ZONE),
-        pd.Timestamp(time_range[1]).tz_convert(tz=TIME_ZONE),
-    ]
-
-    st.session_state.time_index = pd.date_range(
-        start=st.session_state.time_range[0],
-        end=st.session_state.time_range[1],
-        freq=FREQUENCY,
-    )
 
 
 if __name__ == "__main__":

@@ -88,12 +88,14 @@ def main(download_data: bool = True):
             CarColumns.NAME: st.column_config.TextColumn(
                 label=CarColumns.NAME, required=True, default="Ford Ka"
             ),
+
             CarColumns.COMMODITY: st.column_config.SelectboxColumn(
                 label=CarColumns.COMMODITY,
                 options=[c.value for c in Commodity],
                 required=True,
                 default=Commodity.DIESEL.value,
             ),
+
             CarColumns.Consumption: st.column_config.NumberColumn(
                 label=CarColumns.Consumption,
                 min_value=0.0,
@@ -102,11 +104,18 @@ def main(download_data: bool = True):
                 required=True,
                 default=5.0,
             ),
+
             CarColumns.TRIP_COST: st.column_config.NumberColumn(
-                label=CarColumns.TRIP_COST, disabled=True, format="€ %.2f", default=0.0
+                label=CarColumns.TRIP_COST,
+                disabled=True,
+                format="€ %.2f",
+                default=0.0,
             ),
+            
             CarColumns.IN_BUDGET: st.column_config.CheckboxColumn(
-                label=CarColumns.IN_BUDGET, disabled=True, default=False
+                label=CarColumns.IN_BUDGET,
+                disabled=True,
+                default=False,
             ),
         },
     )

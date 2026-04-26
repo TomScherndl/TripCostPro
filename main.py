@@ -58,10 +58,26 @@ def main(download_data: bool = True):
     st.plotly_chart(fig)
 
     st.markdown("## Savings calculator")
+
     st.markdown("### Trip information")
-    st.datetime_input("Trip date")
-    st.number_input("Trip budget (EUR)")
-    st.number_input("Trip distance (km)")
+    st.datetime_input(
+        label="Trip date",
+        min_value=MIN_TIME,
+        max_value=MAX_TIME,
+        value=MIN_TIME,
+    )
+
+    st.number_input(
+        label="Trip budget (EUR)",
+        min_value=1,
+        value=500,
+    )
+
+    st.number_input(
+        label="Trip distance (km)",
+        min_value=1,
+        value=100,
+    )
 
     st.markdown("### Car information")
     st.session_state.car_editor = st.data_editor(
@@ -70,15 +86,13 @@ def main(download_data: bool = True):
         hide_index=True,
         column_config={
             CarColumns.NAME: st.column_config.TextColumn(
-                label=CarColumns.NAME,
-                required=True,
-                default="Ford Ka"
+                label=CarColumns.NAME, required=True, default="Ford Ka"
             ),
             CarColumns.COMMODITY: st.column_config.SelectboxColumn(
                 label=CarColumns.COMMODITY,
                 options=[c.value for c in Commodity],
                 required=True,
-                default=Commodity.DIESEL.value
+                default=Commodity.DIESEL.value,
             ),
             CarColumns.Consumption: st.column_config.NumberColumn(
                 label=CarColumns.Consumption,
@@ -86,20 +100,15 @@ def main(download_data: bool = True):
                 step=0.1,
                 help="kWh/100km for EV, l/100km for fuel cars",
                 required=True,
-                default=5.0
+                default=5.0,
             ),
             CarColumns.TRIP_COST: st.column_config.NumberColumn(
-                label=CarColumns.TRIP_COST,
-                disabled=True,
-                format="€ %.2f",
-                default=0.0
+                label=CarColumns.TRIP_COST, disabled=True, format="€ %.2f", default=0.0
             ),
             CarColumns.IN_BUDGET: st.column_config.CheckboxColumn(
-                label=CarColumns.IN_BUDGET,
-                disabled=True,
-                default=False
+                label=CarColumns.IN_BUDGET, disabled=True, default=False
             ),
-        }
+        },
     )
 
 

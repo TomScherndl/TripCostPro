@@ -1,5 +1,7 @@
+import itertools
 import logging
 from typing import Any
+from zoneinfo import ZoneInfo
 from code.entsoe_download import load_data_from_entsoe
 from matplotlib import pyplot as plt
 import streamlit as st
@@ -7,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 from enum import StrEnum
 from dataclasses import dataclass
+from datetime import timedelta
 
 TIME_ZONE = "Europe/Brussels"
 FREQUENCY = "h"
@@ -31,6 +34,14 @@ class CarColumns(StrEnum):
     IN_BUDGET = "In budget"
 
 
+FUEL_KWH_PER_L = {
+    Commodity.DIESEL.value: 9.7,
+    Commodity.EUROSUPER.value: 8.9,
+    Commodity.NORMAL.value: 8.9,
+    Commodity.SUPER_PLUS.value: 8.9,
+}
+
+
 def main(download_data: bool = True):
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting Dashboard!")
@@ -39,7 +50,10 @@ def main(download_data: bool = True):
 
     electricity_prices = get_electricity_prices(download_data)
     fuel_prices = get_fuel_prices()
-    all_prices = pd.concat([electricity_prices, fuel_prices], axis=1)
+    all_prices = pd.concat(
+        [electricity_prices, fuel_prices], axis=1, join="inner"
+    ).dropna()
+    all_prices = all_prices.sort_index()
 
     st.markdown("# Energy prices dashboard")
 
@@ -60,27 +74,41 @@ def main(download_data: bool = True):
     st.markdown("## Savings calculator")
 
     st.markdown("### Trip information")
-    st.datetime_input(
+    trip_date = st.datetime_input(
         label="Trip date",
-        min_value=MIN_TIME,
-        max_value=MAX_TIME,
-        value=MIN_TIME,
+        min_value=all_prices.index[0],
+        max_value=all_prices.index[-1],
+        value=all_prices.index[0],
+        step=timedelta(hours=1),
     )
+    trip_date = trip_date.astimezone(ZoneInfo(TIME_ZONE))
 
-    st.number_input(
-        label="Trip budget (EUR)",
-        min_value=1,
-        value=500,
-    )
-
-    st.number_input(
+    trip_distance_km = st.number_input(
         label="Trip distance (km)",
         min_value=1,
         value=100,
     )
 
+    trip_budget_eur = st.number_input(
+        label="Trip budget (EUR)",
+        min_value=1,
+        value=500,
+    )
+
+    commodity_prices_at_trip_date = all_prices.loc[trip_date]
+
+    fig = px.bar(commodity_prices_at_trip_date)
+    fig.update_layout(
+        xaxis_title=CarColumns.COMMODITY,
+        yaxis_title="Price (EUR/MWh)",
+        legend_title_text="Trip time",
+        hovermode="closest",
+        dragmode=False,
+    )
+    st.plotly_chart(fig)
+
     st.markdown("### Car information")
-    st.session_state.car_editor = st.data_editor(
+    updated_cars = st.data_editor(
         st.session_state.cars,
         num_rows="dynamic",
         hide_index=True,
@@ -88,14 +116,12 @@ def main(download_data: bool = True):
             CarColumns.NAME: st.column_config.TextColumn(
                 label=CarColumns.NAME, required=True, default="Ford Ka"
             ),
-
             CarColumns.COMMODITY: st.column_config.SelectboxColumn(
                 label=CarColumns.COMMODITY,
                 options=[c.value for c in Commodity],
                 required=True,
                 default=Commodity.DIESEL.value,
             ),
-
             CarColumns.Consumption: st.column_config.NumberColumn(
                 label=CarColumns.Consumption,
                 min_value=0.0,
@@ -104,14 +130,12 @@ def main(download_data: bool = True):
                 required=True,
                 default=5.0,
             ),
-
             CarColumns.TRIP_COST: st.column_config.NumberColumn(
                 label=CarColumns.TRIP_COST,
                 disabled=True,
                 format="€ %.2f",
                 default=0.0,
             ),
-            
             CarColumns.IN_BUDGET: st.column_config.CheckboxColumn(
                 label=CarColumns.IN_BUDGET,
                 disabled=True,
@@ -119,6 +143,19 @@ def main(download_data: bool = True):
             ),
         },
     )
+    updated_cars = updated_cars.apply(
+        lambda row: calculate_outputs(
+            row,
+            commodity_prices_at_trip_date,
+            trip_distance_km,
+            trip_budget_eur,
+        ),
+        axis=1,
+    )
+
+    if (not updated_cars.equals(st.session_state.cars)):
+        st.session_state.cars = updated_cars
+        st.rerun()
 
 
 def get_electricity_prices(download_data):
@@ -130,6 +167,7 @@ def get_electricity_prices(download_data):
         st.session_state.time_index
     ).interpolate(method="linear")
     electricity_prices = electricity_prices.to_frame(name=Commodity.ELETRICITY.value)
+    electricity_prices = electricity_prices.sort_index()
     return electricity_prices
 
 
@@ -156,16 +194,10 @@ def get_fuel_prices():
 
     fuel = fuel.reindex(st.session_state.time_index).interpolate(method="linear")
 
-    kwh_per_l = {
-        Commodity.DIESEL.value: 9.7,
-        Commodity.EUROSUPER.value: 8.9,
-        Commodity.NORMAL.value: 8.9,
-        Commodity.SUPER_PLUS.value: 8.9,
-    }
-
-    for col, kwh_l in kwh_per_l.items():
+    for col, kwh_l in FUEL_KWH_PER_L.items():
         fuel[col] = fuel[col] * (1000.0 / kwh_l)
 
+    fuel = fuel.sort_index()
     return fuel
 
 
@@ -192,6 +224,33 @@ def initialize_session():
                 CarColumns.IN_BUDGET: False,
             }
         )
+    
+
+
+def calculate_outputs(
+    row,
+    commodity_prices_at_trip_date,
+    trip_distance_km,
+    trip_budget_eur,
+):
+    commodity = row[CarColumns.COMMODITY.value]
+
+    cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000 * 1000)
+
+    if commodity == Commodity.ELETRICITY:
+        wh_consumption_per_km = 1000 * row[CarColumns.Consumption] / (100)
+    else:
+        l_consumption_per_km = row[CarColumns.Consumption] / 100
+        fuel_wh_per_l = FUEL_KWH_PER_L[commodity] * 1000
+        wh_consumption_per_km = l_consumption_per_km * fuel_wh_per_l
+
+    trip_price_eur = cost_eur_per_wh * wh_consumption_per_km * trip_distance_km
+    is_trip_in_budget = trip_price_eur <= trip_budget_eur
+
+    row[CarColumns.TRIP_COST] = trip_price_eur
+    row[CarColumns.IN_BUDGET] = is_trip_in_budget
+
+    return row
 
 
 if __name__ == "__main__":

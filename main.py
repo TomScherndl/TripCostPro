@@ -1,15 +1,34 @@
 import logging
+from typing import Any
 from code.entsoe_download import load_data_from_entsoe
 from matplotlib import pyplot as plt
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from enum import StrEnum
+from dataclasses import dataclass
 
 TIME_ZONE = "Europe/Brussels"
 FREQUENCY = "h"
 DATE_FORMAT = "YYYY-MM-DD HH:mm"
 MIN_TIME = pd.Timestamp("20241201", tz=TIME_ZONE)
 MAX_TIME = pd.Timestamp("20250101", tz=TIME_ZONE)
+
+
+class Commodity(StrEnum):
+    DIESEL = "Diesel"
+    EUROSUPER = "Eurosuper"
+    NORMAL = "Normal"
+    SUPER_PLUS = "Super Plus"
+    ELETRICITY = "Electricity"
+
+
+class CarColumns(StrEnum):
+    NAME = "Name"
+    COMMODITY = "Commodity"
+    Consumption = "Consumption"
+    TRIP_COST = "Trip cost (EUR)"
+    IN_BUDGET = "In budget"
 
 
 def main(download_data: bool = True):
@@ -22,8 +41,9 @@ def main(download_data: bool = True):
     fuel_prices = get_fuel_prices()
     all_prices = pd.concat([electricity_prices, fuel_prices], axis=1)
 
-    st.markdown("# Dashboard Content")
+    st.markdown("# Energy prices dashboard")
 
+    st.markdown("## Price comparison")
     fig = px.line(
         all_prices,
     )
@@ -31,28 +51,56 @@ def main(download_data: bool = True):
         xaxis_title="Date",
         yaxis_title="Price (EUR/MWh)",
         legend_title_text="Commodity",
-        hovermode="closest", 
+        hovermode="closest",
         dragmode=False,
-        title="Price comparison"
     )
     fig.update_xaxes(rangeslider_visible=True)
+    st.plotly_chart(fig)
 
-    event = st.plotly_chart(
-        fig,
-        on_select="rerun"
+    st.markdown("## Savings calculator")
+    st.markdown("### Trip information")
+    st.datetime_input("Trip date")
+    st.number_input("Trip budget (EUR)")
+    st.number_input("Trip distance (km)")
+
+    st.markdown("### Car information")
+    st.session_state.car_editor = st.data_editor(
+        st.session_state.cars,
+        num_rows="dynamic",
+        hide_index=True,
+        column_config={
+            CarColumns.NAME: st.column_config.TextColumn(
+                label=CarColumns.NAME,
+                required=True,
+                default="Ford Ka"
+            ),
+            CarColumns.COMMODITY: st.column_config.SelectboxColumn(
+                label=CarColumns.COMMODITY,
+                options=[c.value for c in Commodity],
+                required=True,
+                default=Commodity.DIESEL.value
+            ),
+            CarColumns.Consumption: st.column_config.NumberColumn(
+                label=CarColumns.Consumption,
+                min_value=0.0,
+                step=0.1,
+                help="kWh/100km for EV, l/100km for fuel cars",
+                required=True,
+                default=5.0
+            ),
+            CarColumns.TRIP_COST: st.column_config.NumberColumn(
+                label=CarColumns.TRIP_COST,
+                disabled=True,
+                format="€ %.2f",
+                default=0.0
+            ),
+            CarColumns.IN_BUDGET: st.column_config.CheckboxColumn(
+                label=CarColumns.IN_BUDGET,
+                disabled=True,
+                default=False
+            ),
+        }
     )
-
-    buy_window = st.slider(
-        "Buy window",
-        min_value=MIN_TIME.to_pydatetime(),
-        max_value=MAX_TIME.to_pydatetime(),
-        value=(MIN_TIME.to_pydatetime(), MAX_TIME.to_pydatetime()),
-        format="YYYY-MM-DD HH:mm",
-    )
-
-    age = st.number_input("Enter your age", min_value=0, max_value=120, value=25)
-
-    plt.show()
 
 
 def get_electricity_prices(download_data):
@@ -63,7 +111,7 @@ def get_electricity_prices(download_data):
     electricity_prices = electricity_prices.reindex(
         st.session_state.time_index
     ).interpolate(method="linear")
-    electricity_prices = electricity_prices.to_frame(name="Strom")
+    electricity_prices = electricity_prices.to_frame(name=Commodity.ELETRICITY.value)
     return electricity_prices
 
 
@@ -73,7 +121,16 @@ def get_fuel_prices():
 
     # fuel = pd.concat([fuel_2024, fuel_2025])
     fuel = fuel_2024
-    fuel = fuel.loc[:, ["Stichtag", "Diesel", "Eurosuper", "Normal", "Super Plus"]]
+    fuel = fuel.loc[
+        :,
+        [
+            "Stichtag",
+            Commodity.DIESEL.value,
+            Commodity.EUROSUPER.value,
+            Commodity.NORMAL.value,
+            Commodity.SUPER_PLUS.value,
+        ],
+    ]
     fuel = fuel.set_index("Stichtag")
     fuel.index = pd.to_datetime(fuel.index, dayfirst=True)
     fuel = fuel.tz_localize(TIME_ZONE)
@@ -82,10 +139,10 @@ def get_fuel_prices():
     fuel = fuel.reindex(st.session_state.time_index).interpolate(method="linear")
 
     kwh_per_l = {
-        "Diesel": 9.7,
-        "Eurosuper": 8.9,
-        "Normal": 8.9,
-        "Super Plus": 8.9,
+        Commodity.DIESEL.value: 9.7,
+        Commodity.EUROSUPER.value: 8.9,
+        Commodity.NORMAL.value: 8.9,
+        Commodity.SUPER_PLUS.value: 8.9,
     }
 
     for col, kwh_l in kwh_per_l.items():
@@ -105,6 +162,17 @@ def initialize_session():
             start=st.session_state.time_range[0],
             end=st.session_state.time_range[1],
             freq=FREQUENCY,
+        )
+
+    if "cars" not in st.session_state:
+        st.session_state.cars = pd.DataFrame(
+            {
+                CarColumns.NAME: ["Ford Ka"],
+                CarColumns.COMMODITY: [Commodity.DIESEL.value],
+                CarColumns.Consumption: [5.0],
+                CarColumns.TRIP_COST: 0,
+                CarColumns.IN_BUDGET: False,
+            }
         )
 
 

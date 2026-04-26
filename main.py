@@ -48,12 +48,9 @@ def main(download_data: bool = True):
 
     initialize_session()
 
-    electricity_prices = get_electricity_prices(download_data)
+    electricity_prices = get_electricity_prices()
     fuel_prices = get_fuel_prices()
-    all_prices = pd.concat(
-        [electricity_prices, fuel_prices], axis=1, join="inner"
-    ).dropna()
-    all_prices = all_prices.sort_index()
+    all_prices = get_all_prices(electricity_prices,fuel_prices)
 
     st.markdown("# Energy prices dashboard")
 
@@ -81,8 +78,7 @@ def main(download_data: bool = True):
         value=all_prices.index[0],
         step=timedelta(hours=1),
     )
-    trip_date = trip_date.astimezone(ZoneInfo(TIME_ZONE))
-
+    trip_date = trip_date.replace(tzinfo=ZoneInfo(TIME_ZONE))
     trip_distance_km = st.number_input(
         label="Trip distance (km)",
         min_value=1,
@@ -96,7 +92,6 @@ def main(download_data: bool = True):
     )
 
     commodity_prices_at_trip_date = all_prices.loc[trip_date]
-
     fig = px.bar(commodity_prices_at_trip_date)
     fig.update_layout(
         xaxis_title=CarColumns.COMMODITY,
@@ -153,16 +148,14 @@ def main(download_data: bool = True):
         axis=1,
     )
 
-    if (not updated_cars.equals(st.session_state.cars)):
+    if not updated_cars.equals(st.session_state.cars):
         st.session_state.cars = updated_cars
         st.rerun()
 
 
-def get_electricity_prices(download_data):
-    if download_data:
-        electricity_prices = load_data_from_entsoe()
-        logging.info("Data downloaded successfully.")
-
+@st.cache_data
+def get_electricity_prices():
+    electricity_prices = load_data_from_entsoe(start=MIN_TIME, end=MAX_TIME)
     electricity_prices = electricity_prices.reindex(
         st.session_state.time_index
     ).interpolate(method="linear")
@@ -171,6 +164,7 @@ def get_electricity_prices(download_data):
     return electricity_prices
 
 
+@st.cache_data
 def get_fuel_prices():
     fuel_2024 = pd.read_csv("data/fuel_prices_2024.csv", sep=";", decimal=",")
     fuel_2025 = pd.read_csv("data/fuel_prices_2025.csv", sep=";", decimal=",")
@@ -200,6 +194,13 @@ def get_fuel_prices():
     fuel = fuel.sort_index()
     return fuel
 
+@st.cache_data
+def get_all_prices(electricity_prices, fuel_prices):
+    all_prices = pd.concat(
+        [electricity_prices, fuel_prices], axis=1, join="inner"
+    ).dropna()
+    all_prices = all_prices.sort_index()
+    return all_prices
 
 def initialize_session():
     if "time_range" not in st.session_state:
@@ -224,7 +225,6 @@ def initialize_session():
                 CarColumns.IN_BUDGET: False,
             }
         )
-    
 
 
 def calculate_outputs(

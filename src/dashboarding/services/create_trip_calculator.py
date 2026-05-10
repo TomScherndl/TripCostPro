@@ -49,7 +49,7 @@ def create_trip_calculator(all_prices):
 
     st.markdown("### Car information")
     updated_cars = st.data_editor(
-        st.session_state.cars,
+        st.session_state.trip_planner_data,
         num_rows="dynamic",
         hide_index=True,
         column_config={
@@ -62,8 +62,8 @@ def create_trip_calculator(all_prices):
                 required=True,
                 default=Commodity.DIESEL,
             ),
-            CarColumns.Consumption: st.column_config.NumberColumn(
-                label=CarColumns.Consumption,
+            CarColumns.CONSUMPTION: st.column_config.NumberColumn(
+                label=CarColumns.CONSUMPTION,
                 min_value=0.0,
                 step=0.1,
                 help="kWh/100km for EV, l/100km for fuel cars",
@@ -93,8 +93,8 @@ def create_trip_calculator(all_prices):
         axis=1,
     )
 
-    if not updated_cars.equals(st.session_state.cars):
-        st.session_state.cars = updated_cars
+    if not updated_cars.equals(st.session_state.trip_planner_data):
+        st.session_state.trip_planner_data = updated_cars
         st.rerun()
 
 def calculate_outputs(
@@ -108,9 +108,9 @@ def calculate_outputs(
     cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000 * 1000)
 
     if commodity == Commodity.ELETRICITY:
-        wh_consumption_per_km = 1000 * row[CarColumns.Consumption] / (100)
+        wh_consumption_per_km = 1000 * row[CarColumns.CONSUMPTION] / (100)
     else:
-        l_consumption_per_km = row[CarColumns.Consumption] / 100
+        l_consumption_per_km = row[CarColumns.CONSUMPTION] / 100
         fuel_wh_per_l = FUEL_KWH_PER_L[commodity] * 1000
         wh_consumption_per_km = l_consumption_per_km * fuel_wh_per_l
 

@@ -9,17 +9,21 @@ from dataclasses import dataclass
 
 from dashboarding.models.CarColumns import CarColumns
 from dashboarding.models.Commodity import Commodity
-from dashboarding.services.create_prices import create_prices
-from dashboarding.services.create_trip_calculator import create_trip_calculator
-from dashboarding.services.load_data import get_electricity_prices
-from dashboarding.services.load_data import get_fuel_prices
-from dashboarding.services.load_data import get_all_prices
+
 from dashboarding.models.Globals import (
     FREQUENCY,
     DATE_FORMAT,
     MIN_TIME,
     MAX_TIME
 )
+
+from dashboarding.services.load_data import get_electricity_prices
+from dashboarding.services.load_data import get_fuel_prices
+from dashboarding.services.load_data import get_all_prices
+
+from dashboarding.services.create_prices import create_prices
+from dashboarding.services.create_trip_calculator import create_trip_calculator
+from dashboarding.services.create_cars import create_cars
 
 class TAB_NAMES(StrEnum):
     OVERVIEW = "Overview"
@@ -51,6 +55,9 @@ def main(download_data: bool = True):
     with tabs_by_name[TAB_NAMES.TRIP_PLANNER]:
         create_trip_calculator(all_prices)
 
+    with tabs_by_name[TAB_NAMES.CARS]:
+        create_cars()
+
 def initialize_session():
     if "time_range" not in st.session_state:
         st.session_state.time_range = [
@@ -63,13 +70,13 @@ def initialize_session():
             end=st.session_state.time_range[1],
             freq=FREQUENCY,
         )
-
-    if "cars" not in st.session_state:
-        st.session_state.cars = pd.DataFrame(
+    
+    if "trip_planner_data" not in st.session_state:
+        st.session_state.trip_planner_data = pd.DataFrame(
             {
                 CarColumns.NAME: ["Ford Ka"],
                 CarColumns.COMMODITY: [Commodity.DIESEL],
-                CarColumns.Consumption: [5.0],
+                CarColumns.CONSUMPTION: [5.0],
                 CarColumns.TRIP_COST: 0,
                 CarColumns.IN_BUDGET: False,
             }

@@ -1,3 +1,4 @@
+from enum import StrEnum
 import itertools
 import logging
 from typing import Any
@@ -20,6 +21,12 @@ from dashboarding.models.Globals import (
     MAX_TIME
 )
 
+class TAB_NAMES(StrEnum):
+    OVERVIEW = "Overview"
+    PRICES = "Prices"
+    TRIP_PLANNER="Trip planner"
+    CARS = "Cars"
+
 def main(download_data: bool = True):
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting Dashboard!")
@@ -32,8 +39,17 @@ def main(download_data: bool = True):
 
     st.markdown("# Energy prices dashboard")
 
-    create_prices(all_prices)
-    create_trip_calculator(all_prices)
+    tabs = st.tabs([t.value for t in TAB_NAMES])
+    tabs_by_name = dict(zip(TAB_NAMES, tabs))
+
+    with tabs_by_name[TAB_NAMES.OVERVIEW]:
+        st.markdown("Overview")
+    
+    with tabs_by_name[TAB_NAMES.PRICES]:
+        create_prices(all_prices)
+    
+    with tabs_by_name[TAB_NAMES.TRIP_PLANNER]:
+        create_trip_calculator(all_prices)
 
 def initialize_session():
     if "time_range" not in st.session_state:

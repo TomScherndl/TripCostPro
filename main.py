@@ -2,7 +2,6 @@ import itertools
 import logging
 from typing import Any
 from zoneinfo import ZoneInfo
-from code.entsoe_download import load_data_from_entsoe
 from matplotlib import pyplot as plt
 import streamlit as st
 import pandas as pd
@@ -14,8 +13,8 @@ from datetime import timedelta
 TIME_ZONE = "Europe/Brussels"
 FREQUENCY = "h"
 DATE_FORMAT = "YYYY-MM-DD HH:mm"
-MIN_TIME = pd.Timestamp("20241201", tz=TIME_ZONE)
-MAX_TIME = pd.Timestamp("20250101", tz=TIME_ZONE)
+MIN_TIME = pd.Timestamp("20240101", tz=TIME_ZONE)
+MAX_TIME = pd.Timestamp("20260101", tz=TIME_ZONE)
 
 
 class Commodity(StrEnum):
@@ -50,7 +49,7 @@ def main(download_data: bool = True):
 
     electricity_prices = get_electricity_prices()
     fuel_prices = get_fuel_prices()
-    all_prices = get_all_prices(electricity_prices,fuel_prices)
+    all_prices = get_all_prices(electricity_prices, fuel_prices)
 
     st.markdown("# Energy prices dashboard")
 
@@ -155,23 +154,29 @@ def main(download_data: bool = True):
 
 @st.cache_data
 def get_electricity_prices():
-    electricity_prices = load_data_from_entsoe(start=MIN_TIME, end=MAX_TIME)
-    electricity_prices = electricity_prices.reindex(
-        st.session_state.time_index
-    ).interpolate(method="linear")
-    electricity_prices = electricity_prices.to_frame(name=Commodity.ELETRICITY)
-    electricity_prices = electricity_prices.sort_index()
-    return electricity_prices
+    prices = pd.read_csv("data/electricity_2024_2025.csv")
+    prices = prices.rename(columns={"Unnamed: 0": "date", "0": Commodity.ELETRICITY})
+    
+    prices = prices.set_index("date")
+    prices.index = pd.to_datetime(prices.index, format="%Y-%m-%d %H:%M:%S%z",utc=True)
+    
+    prices = prices.resample(FREQUENCY).mean()
+    prices = prices.reindex(st.session_state.time_index).interpolate(method="linear")
+    
+    prices = prices.sort_index()
+    
+    prices = prices.loc[MIN_TIME:MAX_TIME]
+    return prices
 
 
 @st.cache_data
 def get_fuel_prices():
-    fuel_2024 = pd.read_csv("data/fuel_prices_2024.csv", sep=";", decimal=",")
-    fuel_2025 = pd.read_csv("data/fuel_prices_2025.csv", sep=";", decimal=",")
+    prices_2024 = pd.read_csv("data/fuel_prices_2024.csv", sep=";", decimal=",")
+    prices_2025 = pd.read_csv("data/fuel_prices_2025.csv", sep=";", decimal=",")
 
-    # fuel = pd.concat([fuel_2024, fuel_2025])
-    fuel = fuel_2024
-    fuel = fuel.loc[
+    prices = pd.concat([prices_2024, prices_2025])
+    prices = prices_2024
+    prices = prices.loc[
         :,
         [
             "Stichtag",
@@ -181,18 +186,21 @@ def get_fuel_prices():
             Commodity.SUPER_PLUS,
         ],
     ]
-    fuel = fuel.set_index("Stichtag")
-    fuel.index = pd.to_datetime(fuel.index, dayfirst=True)
-    fuel = fuel.tz_localize(TIME_ZONE)
-    fuel = fuel.resample(FREQUENCY).mean()
+    prices = prices.set_index("Stichtag")
+    prices.index = pd.to_datetime(prices.index, dayfirst=True)
+    prices = prices.tz_localize(TIME_ZONE)
+    prices = prices.resample(FREQUENCY).mean()
 
-    fuel = fuel.reindex(st.session_state.time_index).interpolate(method="linear")
+    prices = prices.reindex(st.session_state.time_index).interpolate(method="linear")
 
     for col, kwh_l in FUEL_KWH_PER_L.items():
-        fuel[col] = fuel[col] * (1000.0 / kwh_l)
+        prices[col] = prices[col] * (1000.0 / kwh_l)
 
-    fuel = fuel.sort_index()
-    return fuel
+    prices = prices.sort_index()
+    
+    prices = prices.loc[MIN_TIME:MAX_TIME]
+    return prices
+
 
 @st.cache_data
 def get_all_prices(electricity_prices, fuel_prices):
@@ -201,6 +209,7 @@ def get_all_prices(electricity_prices, fuel_prices):
     ).dropna()
     all_prices = all_prices.sort_index()
     return all_prices
+
 
 def initialize_session():
     if "time_range" not in st.session_state:

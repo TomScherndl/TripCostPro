@@ -137,7 +137,7 @@ def calculate_trip_data_rowwise(
 ):
     commodity = row[TripCalculatorColumns.COMMODITY.value]
 
-    cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000 * 1000)
+    cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000)
 
     if commodity == Commodity.ELETRICITY.value:
         wh_consumption_per_km = 1000 * row[TripCalculatorColumns.CONSUMPTION.value] / (100)

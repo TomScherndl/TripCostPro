@@ -1,14 +1,15 @@
-from dashboarding.models.CarColumns import CarColumns
+from dashboarding.models.TripCalculatorColumns import TripCalculatorColumns
 from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import FUEL_KWH_PER_L, TIME_ZONE
 
 
 import plotly.express as px
 import streamlit as st
-
+import pandas as pd
 
 from datetime import timedelta
 from zoneinfo import ZoneInfo
+
 
 def create_trip_calculator(all_prices):
     st.markdown("## Savings calculator")
@@ -33,58 +34,80 @@ def create_trip_calculator(all_prices):
     trip_budget_eur = st.number_input(
         label="Trip budget (EUR)",
         min_value=1,
-        value=500,
+        value=5,
     )
 
     commodity_prices_at_trip_date = all_prices.loc[trip_date]
     fig = px.bar(commodity_prices_at_trip_date)
     fig.update_layout(
-        xaxis_title=CarColumns.COMMODITY,
+        xaxis_title=TripCalculatorColumns.COMMODITY,
         yaxis_title="Price (EUR/MWh)",
         legend_title_text="Trip time",
         hovermode="closest",
         dragmode=False,
     )
     st.plotly_chart(fig)
+    
+    create_trip_data(
+        commodity_prices_at_trip_date,
+        trip_distance_km,
+        trip_budget_eur,
+    )
 
-    st.markdown("### Car information")
-    updated_cars = st.data_editor(
-        st.session_state.trip_planner_data,
-        num_rows="dynamic",
+
+def create_trip_data(
+    commodity_prices_at_trip_date,
+    trip_distance_km,
+    trip_budget_eur,
+):
+    st.markdown("### Trip calculation")
+
+    st.session_state.trip_planner_data = get_trip_data(
+        commodity_prices_at_trip_date,
+        trip_distance_km,
+        trip_budget_eur,
+    )
+
+    st.dataframe(
+        data=st.session_state.trip_planner_data,
         hide_index=True,
         column_config={
-            CarColumns.NAME: st.column_config.TextColumn(
-                label=CarColumns.NAME, required=True, default="Ford Ka"
+            TripCalculatorColumns.NAME.value: st.column_config.TextColumn(
+                label=TripCalculatorColumns.NAME.value,
             ),
-            CarColumns.COMMODITY: st.column_config.SelectboxColumn(
-                label=CarColumns.COMMODITY,
-                options=[c for c in Commodity],
-                required=True,
-                default=Commodity.DIESEL,
+            TripCalculatorColumns.COMMODITY.value: st.column_config.TextColumn(
+                label=TripCalculatorColumns.COMMODITY.value,
             ),
-            CarColumns.CONSUMPTION: st.column_config.NumberColumn(
-                label=CarColumns.CONSUMPTION,
-                min_value=0.0,
-                step=0.1,
-                help="kWh/100km for EV, l/100km for fuel cars",
-                required=True,
-                default=5.0,
+            TripCalculatorColumns.CONSUMPTION.value: st.column_config.NumberColumn(
+                label=TripCalculatorColumns.CONSUMPTION.value,
             ),
-            CarColumns.TRIP_COST: st.column_config.NumberColumn(
-                label=CarColumns.TRIP_COST,
-                disabled=True,
+            TripCalculatorColumns.TRIP_COST.value: st.column_config.NumberColumn(
+                label=TripCalculatorColumns.TRIP_COST.value,
                 format="€ %.2f",
-                default=0.0,
             ),
-            CarColumns.IN_BUDGET: st.column_config.CheckboxColumn(
-                label=CarColumns.IN_BUDGET,
-                disabled=True,
+            TripCalculatorColumns.IN_BUDGET.value: st.column_config.CheckboxColumn(
+                label=TripCalculatorColumns.IN_BUDGET.value,
                 default=False,
             ),
         },
     )
-    updated_cars = updated_cars.apply(
-        lambda row: calculate_outputs(
+
+
+
+def get_trip_data(
+    commodity_prices_at_trip_date,
+    trip_distance_km,
+    trip_budget_eur,
+):
+    if "cars" in st.session_state:
+        df = st.session_state.cars.copy()
+        df[TripCalculatorColumns.TRIP_COST.value] = 0.0
+        df[TripCalculatorColumns.IN_BUDGET.value] = False
+    else:
+        df = pd.DataFrame(columns=[t.value for t in TripCalculatorColumns])
+
+    df = df.apply(
+        lambda row: calculate_trip_data_rowwise(
             row,
             commodity_prices_at_trip_date,
             trip_distance_km,
@@ -93,31 +116,30 @@ def create_trip_calculator(all_prices):
         axis=1,
     )
 
-    if not updated_cars.equals(st.session_state.trip_planner_data):
-        st.session_state.trip_planner_data = updated_cars
-        st.rerun()
+    return df
 
-def calculate_outputs(
+
+def calculate_trip_data_rowwise(
     row,
     commodity_prices_at_trip_date,
     trip_distance_km,
     trip_budget_eur,
 ):
-    commodity = row[CarColumns.COMMODITY]
+    commodity = row[TripCalculatorColumns.COMMODITY.value]
 
     cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000 * 1000)
 
-    if commodity == Commodity.ELETRICITY:
-        wh_consumption_per_km = 1000 * row[CarColumns.CONSUMPTION] / (100)
+    if commodity == Commodity.ELETRICITY.value:
+        wh_consumption_per_km = 1000 * row[TripCalculatorColumns.CONSUMPTION.value] / (100)
     else:
-        l_consumption_per_km = row[CarColumns.CONSUMPTION] / 100
+        l_consumption_per_km = row[TripCalculatorColumns.CONSUMPTION.value] / 100
         fuel_wh_per_l = FUEL_KWH_PER_L[commodity] * 1000
         wh_consumption_per_km = l_consumption_per_km * fuel_wh_per_l
 
     trip_price_eur = cost_eur_per_wh * wh_consumption_per_km * trip_distance_km
     is_trip_in_budget = trip_price_eur <= trip_budget_eur
 
-    row[CarColumns.TRIP_COST] = trip_price_eur
-    row[CarColumns.IN_BUDGET] = is_trip_in_budget
+    row[TripCalculatorColumns.TRIP_COST.value] = trip_price_eur
+    row[TripCalculatorColumns.IN_BUDGET.value] = is_trip_in_budget
 
     return row

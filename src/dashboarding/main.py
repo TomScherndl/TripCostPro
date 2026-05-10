@@ -70,17 +70,6 @@ def initialize_session():
             end=st.session_state.time_range[1],
             freq=FREQUENCY,
         )
-    
-    if "trip_planner_data" not in st.session_state:
-        st.session_state.trip_planner_data = pd.DataFrame(
-            {
-                CarColumns.NAME: ["Ford Ka"],
-                CarColumns.COMMODITY: [Commodity.DIESEL],
-                CarColumns.CONSUMPTION: [5.0],
-                CarColumns.TRIP_COST: 0,
-                CarColumns.IN_BUDGET: False,
-            }
-        )
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 import pandas as pd
 from dashboarding.models.Commodity import Commodity
 
-TIME_ZONE = "Europe/Brussels"
-FREQUENCY = "h"
-DATE_FORMAT = "YYYY-MM-DD HH:mm"
+TIME_ZONE = "UTC"
+FREQUENCY = "D"
+DATE_FORMAT = "YYYY-MM-DD"
 MIN_TIME = pd.Timestamp("20240101", tz=TIME_ZONE)
 MAX_TIME = pd.Timestamp("20261231", tz=TIME_ZONE)
 FUEL_KWH_PER_L = {

@@ -10,7 +10,7 @@ from dashboarding.models.TabNames import TabNames
 from dashboarding.models.CarColumns import CarColumns
 from dashboarding.models.Commodity import Commodity
 
-from dashboarding.models.Globals import FREQUENCY, DATE_FORMAT, MIN_TIME, MAX_TIME
+from dashboarding.models.Globals import FREQUENCY, DATE_FORMAT, MIN_TIME, MAX_TIME, TIME_ZONE
 
 from dashboarding.services.load_data import (
     get_electricity_prices,
@@ -22,6 +22,7 @@ from dashboarding.services.load_data import get_all_prices
 from dashboarding.services.create_prices import create_prices
 from dashboarding.services.create_trip_calculator import create_trip_calculator
 from dashboarding.services.create_cars import create_cars
+from dashboarding.services.create_overview import create_overview
 
 
 def main(download_data: bool = True):
@@ -47,10 +48,11 @@ def main(download_data: bool = True):
     st.session_state.tabs_by_name = tabs_by_name
 
     with tabs_by_name[TabNames.OVERVIEW]:
-        st.markdown("Overview")
-        if tabs_by_name[TabNames.OVERVIEW].open:
-            with st.sidebar:
-                st.markdown("Sidebar content for Overview")
+        create_overview(
+            all_prices,
+            electricity_prices,
+            fuel_prices
+        )
 
     with tabs_by_name[TabNames.PRICES]:
         create_prices(
@@ -78,6 +80,7 @@ def initialize_session():
             start=st.session_state.time_range[0],
             end=st.session_state.time_range[1],
             freq=FREQUENCY,
+            tz=TIME_ZONE
         )
 
 

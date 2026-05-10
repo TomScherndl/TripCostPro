@@ -3,12 +3,11 @@ from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import FUEL_KWH_PER_L, TIME_ZONE
 from dashboarding.models.TabNames import TabNames
 
-
+from datetime import timedelta, datetime, date
 import plotly.express as px
 import streamlit as st
 import pandas as pd
 
-from datetime import timedelta
 from zoneinfo import ZoneInfo
 
 
@@ -16,16 +15,21 @@ def create_trip_calculator(all_prices):
     st.markdown("## Savings calculator")
 
     st.markdown("### Trip information")
-    trip_date = st.datetime_input(
+    today = pd.Timestamp(datetime.now(ZoneInfo(TIME_ZONE)))
+    trip_date = st.date_input(
         label="Trip date",
         min_value=all_prices.index[0],
         max_value=all_prices.index[-1],
-        value=all_prices.index[0],
-        step=timedelta(hours=1),
+        value=today,
     )
     assert trip_date is not None
 
-    trip_date = trip_date.replace(tzinfo=ZoneInfo(TIME_ZONE))
+    trip_date = pd.Timestamp(trip_date).replace(
+    tzinfo=ZoneInfo(TIME_ZONE) if today is today else None,
+    hour=0,
+    minute=0,
+    second=0,
+    microsecond=0)
     trip_distance_km = st.number_input(
         label="Trip distance (km)",
         min_value=1,

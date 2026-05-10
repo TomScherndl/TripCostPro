@@ -58,3 +58,6 @@ def create_prices(
         fig.update_yaxes(autorange=True)
 
         st.plotly_chart(fig)
+
+    with st.sidebar:
+            st.markdown("Sidebar content for Prices")

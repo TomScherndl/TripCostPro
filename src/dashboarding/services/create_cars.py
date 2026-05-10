@@ -42,6 +42,9 @@ def create_cars():
         st.session_state.cars = updated_cars
         st.rerun()
 
+    with st.sidebar:
+        st.markdown("Sidebar content for Car Management")
+
 
 def get_default_cars():
     default_data =[

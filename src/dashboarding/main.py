@@ -52,6 +52,8 @@ def main(download_data: bool = True):
 
     with tabs_by_name[TAB_NAMES.OVERVIEW]:
         st.markdown("Overview")
+        with st.sidebar:
+            st.markdown("Sidebar content for Overview")
 
     with tabs_by_name[TAB_NAMES.PRICES]:
         create_prices(

@@ -54,6 +54,9 @@ def create_trip_calculator(all_prices):
         trip_budget_eur,
     )
 
+    with st.sidebar:
+        st.markdown("Sidebar content for Trip Calculator")
+
 
 def create_trip_data(
     commodity_prices_at_trip_date,

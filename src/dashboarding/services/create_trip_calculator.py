@@ -1,3 +1,4 @@
+from dashboarding.models.SideBarContent import TRIP_PLANNER_SIDEBAR_CONTENT
 from dashboarding.models.TripCalculatorColumns import TripCalculatorColumns
 from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import FUEL_KWH_PER_L, TIME_ZONE
@@ -61,7 +62,7 @@ def create_trip_calculator(all_prices):
 
     if st.session_state.tabs_by_name[TabNames.TRIP_PLANNER].open:
         with st.sidebar:
-            st.markdown("Sidebar content for Trip Calculator")
+            st.markdown(TRIP_PLANNER_SIDEBAR_CONTENT)
 
 
 def create_trip_data(

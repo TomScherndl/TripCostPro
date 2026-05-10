@@ -3,6 +3,7 @@ import streamlit as st
 from dashboarding.models.CarColumns import CarColumns
 from dashboarding.models.Commodity import Commodity
 
+from dashboarding.models.SideBarContent import CARS_SIDEBAR_CONTENT
 from dashboarding.models.TabNames import TabNames
 
 def create_cars():
@@ -45,7 +46,7 @@ def create_cars():
 
     if st.session_state.tabs_by_name[TabNames.CARS].open:
         with st.sidebar:
-            st.markdown("Sidebar content for Car Management")
+            st.markdown(CARS_SIDEBAR_CONTENT)
 
 
 def get_default_cars():

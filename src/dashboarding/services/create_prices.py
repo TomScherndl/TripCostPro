@@ -1,6 +1,7 @@
 import plotly.express as px
 import streamlit as st
 
+from dashboarding.models.SideBarContent import PRICES_SIDEBAR_CONTENT
 from dashboarding.models.TabNames import TabNames
 from dashboarding.models.Commodity import Commodity
 
@@ -62,4 +63,4 @@ def create_prices(
 
     if st.session_state.tabs_by_name[TabNames.PRICES].open:
         with st.sidebar:
-            st.markdown("Sidebar content for Prices")
+            st.markdown(PRICES_SIDEBAR_CONTENT)

@@ -6,6 +6,7 @@ import pandas as pd
 
 from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import TIME_ZONE
+from dashboarding.models.SideBarContent import OVERVIEW_SIDEBAR_CONTENT
 from dashboarding.models.TabNames import TabNames
 
 import time
@@ -59,7 +60,7 @@ def create_overview(
 
     if st.session_state.tabs_by_name[TabNames.OVERVIEW].open:
         with st.sidebar:
-            st.markdown("Sidebar content for Overview")
+            st.markdown(OVERVIEW_SIDEBAR_CONTENT)
 
 def get_formatted(value,is_electric=True):
     per_unit = "kWh" if is_electric else "liter"

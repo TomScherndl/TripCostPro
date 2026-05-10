@@ -10,5 +10,4 @@ FUEL_KWH_PER_L = {
     Commodity.DIESEL: 9.7,
     Commodity.EUROSUPER: 8.9,
     Commodity.NORMAL: 8.9,
-    Commodity.SUPER_PLUS: 8.9,
-}
+    Commodity.SUPER_PLUS: 8.9}

@@ -15,7 +15,7 @@ def create_prices(
     )
     fig.update_layout(
         xaxis_title="Date",
-        yaxis_title="Price (EUR per MWh)",
+        yaxis_title="EUR / kWh",
         legend_title_text="Commodity",
         hovermode="closest",
         dragmode=False,
@@ -32,7 +32,7 @@ def create_prices(
     
     fig.update_layout(
         xaxis_title="Date",
-        yaxis_title="Price (EUR per MWh)",
+        yaxis_title="EUR / kwh",
         hovermode="closest",
         dragmode=False,
     )
@@ -51,7 +51,7 @@ def create_prices(
     
         fig.update_layout(
             xaxis_title="Date",
-            yaxis_title="Price (EUR per liter)",
+            yaxis_title="EUR / liter",
             hovermode="closest",
             dragmode=False,
         )

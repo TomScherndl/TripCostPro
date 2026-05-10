@@ -38,10 +38,10 @@ def create_overview(
     value = electricity_prices.loc[overview_date].iloc[0]
     delta = value - electricity_prices.loc[overview_date - timedelta(days=1)].iloc[0]
     st.metric(
-        label=Commodity.ELETRICITY.value,
-        value=value,
-        delta=delta,
-        format="euro"
+        label=f"{Commodity.ELETRICITY.value}",
+        value=get_formatted(value),
+        delta=get_formatted(delta),
+        border=True,
     )
 
     for commodity in Commodity:
@@ -51,12 +51,16 @@ def create_overview(
         value = fuel_prices.loc[overview_date,commodity]
         delta = value - fuel_prices.loc[overview_date - timedelta(days=1),commodity]
         st.metric(
-            label=commodity.value,
-            value=value,
-            delta=delta,
-            format="euro"
+            label=f"{commodity.value}",
+            value=get_formatted(value,False),
+            delta=get_formatted(delta,False),
+            border=True,
         )
 
     if st.session_state.tabs_by_name[TabNames.OVERVIEW].open:
         with st.sidebar:
             st.markdown("Sidebar content for Overview")
+
+def get_formatted(value,is_electric=True):
+    per_unit = "kWh" if is_electric else "liter"
+    return f"{value:.4f} EUR / {per_unit}"

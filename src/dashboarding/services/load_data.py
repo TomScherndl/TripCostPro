@@ -25,6 +25,9 @@ def get_electricity_prices():
     )
 
     prices = normalize_to_same_timeseries(prices)
+
+    # convert to EUR per kWh
+    prices = prices / 1000
     return prices
 
 
@@ -67,7 +70,7 @@ def get_fuel_prices():
 def get_fuel_prices_comparable():
     prices = get_fuel_prices().copy()
     for col, kwh_l in FUEL_KWH_PER_L.items():
-        prices[col] = prices[col] * (1000.0 / kwh_l)
+        prices[col] = prices[col] / kwh_l
     return prices
 
 

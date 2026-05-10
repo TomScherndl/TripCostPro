@@ -1,4 +1,4 @@
-from code.entsoe_download import load_data_from_entsoe
+from dashboarding.scripts.entsoe_download import load_data_from_entsoe
 import pandas as pd
 
 TIME_ZONE = "Europe/Brussels"

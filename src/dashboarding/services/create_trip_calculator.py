@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 
 def create_trip_calculator(all_prices):
-    st.markdown("## Savings calculator")
+    st.markdown("## Trip planner")
 
     st.markdown("### Trip information")
     today = pd.Timestamp(datetime.now(ZoneInfo(TIME_ZONE)))

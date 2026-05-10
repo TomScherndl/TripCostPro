@@ -1,5 +1,5 @@
 import pandas as pd
-from src.dashboarding.models.Commodity import Commodity
+from dashboarding.models.Commodity import Commodity
 
 TIME_ZONE = "Europe/Brussels"
 FREQUENCY = "h"

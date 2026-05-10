@@ -35,10 +35,10 @@ class CarColumns(StrEnum):
 
 
 FUEL_KWH_PER_L = {
-    Commodity.DIESEL.value: 9.7,
-    Commodity.EUROSUPER.value: 8.9,
-    Commodity.NORMAL.value: 8.9,
-    Commodity.SUPER_PLUS.value: 8.9,
+    Commodity.DIESEL: 9.7,
+    Commodity.EUROSUPER: 8.9,
+    Commodity.NORMAL: 8.9,
+    Commodity.SUPER_PLUS: 8.9,
 }
 
 
@@ -113,9 +113,9 @@ def main(download_data: bool = True):
             ),
             CarColumns.COMMODITY: st.column_config.SelectboxColumn(
                 label=CarColumns.COMMODITY,
-                options=[c.value for c in Commodity],
+                options=[c for c in Commodity],
                 required=True,
-                default=Commodity.DIESEL.value,
+                default=Commodity.DIESEL,
             ),
             CarColumns.Consumption: st.column_config.NumberColumn(
                 label=CarColumns.Consumption,
@@ -159,7 +159,7 @@ def get_electricity_prices():
     electricity_prices = electricity_prices.reindex(
         st.session_state.time_index
     ).interpolate(method="linear")
-    electricity_prices = electricity_prices.to_frame(name=Commodity.ELETRICITY.value)
+    electricity_prices = electricity_prices.to_frame(name=Commodity.ELETRICITY)
     electricity_prices = electricity_prices.sort_index()
     return electricity_prices
 
@@ -175,10 +175,10 @@ def get_fuel_prices():
         :,
         [
             "Stichtag",
-            Commodity.DIESEL.value,
-            Commodity.EUROSUPER.value,
-            Commodity.NORMAL.value,
-            Commodity.SUPER_PLUS.value,
+            Commodity.DIESEL,
+            Commodity.EUROSUPER,
+            Commodity.NORMAL,
+            Commodity.SUPER_PLUS,
         ],
     ]
     fuel = fuel.set_index("Stichtag")
@@ -219,7 +219,7 @@ def initialize_session():
         st.session_state.cars = pd.DataFrame(
             {
                 CarColumns.NAME: ["Ford Ka"],
-                CarColumns.COMMODITY: [Commodity.DIESEL.value],
+                CarColumns.COMMODITY: [Commodity.DIESEL],
                 CarColumns.Consumption: [5.0],
                 CarColumns.TRIP_COST: 0,
                 CarColumns.IN_BUDGET: False,
@@ -233,7 +233,7 @@ def calculate_outputs(
     trip_distance_km,
     trip_budget_eur,
 ):
-    commodity = row[CarColumns.COMMODITY.value]
+    commodity = row[CarColumns.COMMODITY]
 
     cost_eur_per_wh = commodity_prices_at_trip_date[commodity] / (1000 * 1000)
 

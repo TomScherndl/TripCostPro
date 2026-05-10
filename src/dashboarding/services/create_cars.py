@@ -3,6 +3,7 @@ import streamlit as st
 from dashboarding.models.CarColumns import CarColumns
 from dashboarding.models.Commodity import Commodity
 
+from dashboarding.models.TabNames import TabNames
 
 def create_cars():
     need_default_cars = "cars" not in st.session_state
@@ -42,8 +43,9 @@ def create_cars():
         st.session_state.cars = updated_cars
         st.rerun()
 
-    with st.sidebar:
-        st.markdown("Sidebar content for Car Management")
+    if st.session_state.tabs_by_name[TabNames.CARS].open:
+        with st.sidebar:
+            st.markdown("Sidebar content for Car Management")
 
 
 def get_default_cars():

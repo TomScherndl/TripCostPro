@@ -1,6 +1,7 @@
 from dashboarding.models.TripCalculatorColumns import TripCalculatorColumns
 from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import FUEL_KWH_PER_L, TIME_ZONE
+from dashboarding.models.TabNames import TabNames
 
 
 import plotly.express as px
@@ -54,8 +55,9 @@ def create_trip_calculator(all_prices):
         trip_budget_eur,
     )
 
-    with st.sidebar:
-        st.markdown("Sidebar content for Trip Calculator")
+    if st.session_state.tabs_by_name[TabNames.TRIP_PLANNER].open:
+        with st.sidebar:
+            st.markdown("Sidebar content for Trip Calculator")
 
 
 def create_trip_data(

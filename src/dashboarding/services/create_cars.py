@@ -12,6 +12,14 @@ def create_cars():
         st.session_state.cars = get_default_cars()
 
     st.markdown("## Car Management")
+    st.markdown("""
+    Manage your vehicle fleet by adding, editing, or removing cars from the list. This will ensure accurate fuel consumption calculations for trip planning.
+    * **Add new cars** by clicking on the "+" button in the upper right corner of the table/data editor. You can specify the car name, select the type of commodity it uses (e.g., Diesel, Electricity), and input its fuel consumption in liters per 100km (l/100km) for fuel cars or kilowatt-hours per 100km (kWh/100km) for electric vehicles.                
+    * **Delete cars** by selecting the row and clicking the "Delete" button.
+    * **Edit existing entries** by clicking into the table to keep your fleet information up to date.
+    * **Download your car list** for offline management and backup by clicking the "Download" button.
+    * **Need further help?** See the sidebar for detailed instructions and tips on managing your vehicle fleet effectively.
+    """)
     updated_cars = st.data_editor(
         st.session_state.cars,
         num_rows="dynamic",

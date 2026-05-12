@@ -38,7 +38,7 @@ def create_dashboard():
         fuel_prices_comparable,
     )
 
-    st.markdown("# Energy prices dashboard")
+    st.markdown("# Optimal Car Choice and Fleet Management Dashboard")
 
     tabs = st.tabs(
         tabs=[t.value for t in TabNames],
@@ -68,6 +68,9 @@ def create_dashboard():
 
 
 def initialize_session():
+    # hide sidebar on first load
+    st.set_page_config(initial_sidebar_state="collapsed")
+    
     st.session_state.active_tab = TabNames.OVERVIEW
     if "time_range" not in st.session_state:
         st.session_state.time_range = [

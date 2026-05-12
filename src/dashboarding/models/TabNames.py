@@ -3,6 +3,6 @@ from enum import StrEnum
 
 class TabNames(StrEnum):
     OVERVIEW = "Overview"
-    PRICES = "Prices"
     TRIP_PLANNER = "Trip planner"
-    CARS = "Cars"
+    PRICES = "Historical Prices"
+    CARS = "Car Fleet Management"

@@ -1,0 +1,27 @@
+
+
+div[data-testid="stMetric"] > div {
+    padding: 20px;             /* Padding around the content inside the card */
+    border-radius: 25px;       /* Softly rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow effect */
+}
+.rangeslider-container{
+    background: #f0f0f0; /* Light gray background for the slider container */
+    padding: 10px;        /* Padding around the slider */
+    border-radius: 10px;  /* Rounded corners for the container */
+}
+
+.rangeslider-slidebox{
+    background: #ffffff; /* White background for the slider box */
+    padding: 10px;        /* Padding around the slider box */
+    border-radius: 10px;  /* Rounded corners for the slider box */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for the slider box */
+}
+/* -------------------- */
+/* TARGETING ALL STREMLIT BUTTONS (for consistency) */
+.button {
+    background-color: #1abc9c; /* A vibrant teal color */
+    color: white;
+    border-radius: 5px;
+    padding: 10px 24px;
+}

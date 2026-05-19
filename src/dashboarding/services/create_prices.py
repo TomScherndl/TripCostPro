@@ -11,6 +11,8 @@ from dashboarding.models.TabNames import TabNames
 from dashboarding.models.Commodity import Commodity
 
 ANNOT_TODAY = f"Today: afterwards predicted values!"
+if "layout_preference" not in st.session_state:
+    st.session_state["layout_preference"] = "wide"
 st.set_page_config(page_title="TripCostPro", layout=st.session_state["layout_preference"])
 
 def create_prices(

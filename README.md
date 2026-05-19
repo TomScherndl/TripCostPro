@@ -4,7 +4,7 @@
   <img src="./img/logo_MATTSsmall.png" alt="TripCostPro Logo" width="300px" />
 </p>
 
-A Streamlit dashboard for analyzing and predicting trip expenses, using the uv package manager.
+A Streamlit dashboard for analyzing and predicting trip expenses, using streamlit and plotly.
 
 ---
 

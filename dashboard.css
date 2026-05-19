@@ -1,9 +1,16 @@
-
+.st-bn:hover{
+    color: darkblue
+}
 
 div[data-testid="stMetric"] > div {
     padding: 20px;             /* Padding around the content inside the card */
     border-radius: 25px;       /* Softly rounded corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow effect */
+}
+
+.rangeslider-mask-min{
+    background: #1abc9c; /* A vibrant teal color for the minimum range */
+    fill: #1abc9c; /* Fill color for the minimum range */
 }
 .rangeslider-container{
     background: #f0f0f0; /* Light gray background for the slider container */

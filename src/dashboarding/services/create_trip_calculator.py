@@ -50,7 +50,7 @@ def create_trip_calculator(all_prices):
         trip_distance_km = st.number_input(
             label="Trip distance (km)",
             min_value=1.0,
-            value=100.0,
+            value=300.0,
             )
     with cols[2]:
         trip_budget_eur = st.number_input(
@@ -62,14 +62,15 @@ def create_trip_calculator(all_prices):
         num_cars = st.number_input(
             label="Number of cars to show in table",
             min_value=1,
-            value=10,
+            value=6,
         )
     st.markdown(
         """
         <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
             <strong>Note:</strong> The trip planner calculates the estimated cost of a trip based on the selected trip date, distance, and budget. 
-            It considers the current cars in your garage and their respective fuel or electricity consumption to determine the most cost-efficient option for your trip.
+            It considers the current cars in our garage and their respective fuel or electricity consumption to determine the most cost-efficient option for your trip.
         </div>
+        <br>
         """,
         unsafe_allow_html=True,
     )
@@ -82,7 +83,7 @@ def create_trip_calculator(all_prices):
         fig = px.bar(commodity_prices_at_trip_date)
         fig.update_layout(
             xaxis_title=TripCalculatorColumns.COMMODITY,
-            yaxis_title="Price (EUR/MWh)",
+            yaxis_title="Price (EUR/kWh)",
             title = f"Commodity Prices on {trip_date.strftime('%d.%m.%Y')}",
             showlegend=False, 
             hovermode="closest",
@@ -232,7 +233,6 @@ def calculate_trip_data_rowwise(
 
     trip_price_eur = cost_eur_per_wh * wh_consumption_per_km * trip_distance_km
     is_trip_in_budget = trip_price_eur <= trip_budget_eur
-
     row[TripCalculatorColumns.TRIP_COST.value] = trip_price_eur
     row[TripCalculatorColumns.IN_BUDGET.value] = is_trip_in_budget
 

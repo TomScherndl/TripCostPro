@@ -1,13 +1,13 @@
 from dashboarding.models.TabNames import TabNames
 
 OVERVIEW_SIDEBAR_CONTENT = """
-## Overview Dashboard
+## HELP: Overview Dashboard
 Welcome to the central commodity dashboard. This page provides current commodity prices.
 
 ### Core Market Tracking
 We monitor critical energy sources, including:
 *   **Electric Energy:** electricity pricing (energy market - not company specific load prices).
-*   **Fossil Fuels:** liquid and gaseous fuels (e.g., diesel, gasoline).
+*   **Fossil Fuels:** liquid fossilized fuels (e.g., diesel, gasoline).
 
 ### Functionality
 Utilize the integrated Date Picker to analyze historical data and compare pricing across specific time periods.
@@ -18,7 +18,7 @@ The dashboard highlights key price changes using delta metrics (percentage chang
 *Recommendation: Use this section for initial assessment of current market conditions.*
 """
 PRICES_SIDEBAR_CONTENT = """
-## Market Price Analysis
+## HELP: Historical Price Analysis
 This section provides an advanced view into commodity pricing dynamics, allowing users to conduct detailed comparative analysis.
 
 ### Key Features
@@ -32,7 +32,7 @@ Use the integrated range sliders to adjust the data visualization parameters (da
 *This module is designed for deep dive financial and energy sector analysis.*
 """
 TRIP_PLANNER_SIDEBAR_CONTENT = """
-## Trip Planning Tool
+## HELP: Trip Planning Tool
 The Trip Planner facilitates comprehensive journey cost estimation by integrating various travel parameters. This tool provides a reliable assessment of travel feasibility based on current commodity pricing.
 
 ### Inputs and Parameters
@@ -51,7 +51,7 @@ The system calculates the estimated costs based on three primary factors:
 """
 
 CARS_SIDEBAR_CONTENT = """
-## Vehicle Fleet Management
+## HELP: Vehicle Fleet Management
 This command center allows users to manage and dynamically update vehicle data, ensuring accurate fuel consumption calculations for trip planning.
 
 ### Core Functionality

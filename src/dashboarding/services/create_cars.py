@@ -13,12 +13,12 @@ def create_cars():
 
     st.markdown("## Car Management")
     st.markdown("""
-    Manage your vehicle fleet by adding, editing, or removing cars from the list. This will ensure accurate fuel consumption calculations for trip planning.
+    Manage our vehicle fleet by adding, editing, or removing cars from the list. This will ensure accurate fuel consumption calculations for trip planning.
     * **Add new cars** by clicking on the "+" button in the upper right corner of the table/data editor. You can specify the car name, select the type of commodity it uses (e.g., Diesel, Electricity), and input its fuel consumption in liters per 100km (l/100km) for fuel cars or kilowatt-hours per 100km (kWh/100km) for electric vehicles.                
-    * **Delete cars** by selecting the row and clicking the "Delete" button.
-    * **Edit existing entries** by clicking into the table to keep your fleet information up to date.
-    * **Download your car list** for offline management and backup by clicking the "Download" button.
-    * **Need further help?** See the sidebar for detailed instructions and tips on managing your vehicle fleet effectively.
+    * **Delete cars** by selecting the checkbox in the first column of each row and clicking the "Delete" button in the upper right corner.
+    * **Edit existing entries** by clicking into the table to keep our fleet information up to date.
+    * **Download our car list** for offline management and backup by clicking the "Download" button.
+    * **Need further help?** See the sidebar for detailed instructions and tips on managing our vehicle fleet effectively.
     """)
     updated_cars = st.data_editor(
         st.session_state.cars,
@@ -44,6 +44,13 @@ def create_cars():
                 required=True,
                 default=5.0,
             ),
+            CarColumns.UNIT.value: st.column_config.SelectboxColumn(
+                label=CarColumns.UNIT.value,
+                options=[c for c in Commodity],
+                required=True,
+                default="l/100km",
+            ),
+
         },
     )
 
@@ -162,5 +169,6 @@ def get_default_cars():
     ]
 
     default_cars = pd.DataFrame(default_data)
+    default_cars["UNIT"] = default_cars[CarColumns.COMMODITY.value].apply(lambda x: "kWh/100km" if x == Commodity.ELETRICITY else "l/100km")
     default_cars.columns = default_cars.columns.astype(str)
     return default_cars

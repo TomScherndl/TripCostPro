@@ -38,7 +38,8 @@ def create_dashboard():
         fuel_prices_comparable,
     )
 
-    st.markdown("# Optimal Car Choice and Fleet Management Dashboard")
+    st.markdown("""# MATTS TripCost Pro""")
+    st.markdown(""" ## Dashboard for Trip Planning and Vehicle Choice  """)
 
     tabs = st.tabs(
         tabs=[t.value for t in TabNames],

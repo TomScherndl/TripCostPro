@@ -16,17 +16,18 @@ with open('./dashboard.css') as f:
     css = f.read()
 st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
 
-
 def create_overview(
     all_prices,
     electricity_prices,
     fuel_prices,
 ):
+    st.logo("./img/logo_MATTSsmall.png",  size="large") # Adds to top-left & sidebar
     st.markdown(f"""
     Thinking about taking a trip and want to choose the cheapest option from our car fleet?   
-    Use the **Date Picker** to select a specific date and get an instant snapshot of commodity prices on that day and their change from the day before.
-    
-    **Note**: We assume that you will be using **our on-site loading facilities for electric cars**, so the cost of electricity is based on the energy market price, not company-specific load prices. 
+    Use the **Date Picker** to select a specific date and get an instant snapshot of commodity prices on that day and their change from the day before.  
+    Use the trip planner tab to give details of your planned trip and get immediate recommendations which car to take and what costs to expect. If you are admin personnel, use the last tab to handle fleet management.   
+                
+    **Note**: We assume that you will be using **our on-site loading facilities for electric cars**, so the cost of electricity is based on the energy market price, not company-specific load prices. The price is opportunity cost of energy that we are not able to sell to the market and does not include any further fees or taxes.
     """)
     today = pd.Timestamp(datetime.now(ZoneInfo(TIME_ZONE)))
     chosen_date = st.session_state.get("overview_date") if st.session_state.get("overview_date") else today

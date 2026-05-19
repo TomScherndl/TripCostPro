@@ -6,10 +6,15 @@ import pandas as pd
 
 from dashboarding.models.Commodity import Commodity
 from dashboarding.models.Globals import TIME_ZONE
-from dashboarding.models.SideBarContent import OVERVIEW_SIDEBAR_CONTENT
+from dashboarding.models.SideBarContent import OVERVIEW_SIDEBAR_CONTENT, switch_layout
 from dashboarding.models.TabNames import TabNames
 
-st.set_page_config(layout="wide")
+# Initialize ‘layout_preference’ in session state if it’s not already set
+if "layout_preference" not in st.session_state:
+    st.session_state["layout_preference"] = "wide"
+
+# Set the page configuration using the ‘layout_preference’ from session state
+st.set_page_config(page_title="TripCostPro", layout=st.session_state["layout_preference"])
 
 # handling of external css
 with open('./dashboard.css') as f:
@@ -78,7 +83,9 @@ def create_overview(
             
     if st.session_state.tabs_by_name[TabNames.OVERVIEW].open:
         with st.sidebar:
+            switch_layout()
             st.markdown(OVERVIEW_SIDEBAR_CONTENT)
+
     st.markdown("**Source:** *[ENTSOE Transparency Database](https://transparency.entsoe.eu/) for electricity prices, and [Austrian Federal Ministry Economy, Energy and Tourism](https://www.bmwet.gv.at/Themen/Energie/kosten.html) for fuel prices.*")
 
 def get_formatted(value,is_electric=True):

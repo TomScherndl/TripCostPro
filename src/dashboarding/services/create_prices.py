@@ -9,8 +9,9 @@ from dashboarding.models.Globals import TIME_ZONE
 from dashboarding.models.SideBarContent import PRICES_SIDEBAR_CONTENT
 from dashboarding.models.TabNames import TabNames
 from dashboarding.models.Commodity import Commodity
-st.set_page_config(layout="wide")
+
 ANNOT_TODAY = f"Today: afterwards predicted values!"
+st.set_page_config(page_title="TripCostPro", layout=st.session_state["layout_preference"])
 
 def create_prices(
         all_prices,

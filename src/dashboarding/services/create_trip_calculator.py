@@ -14,8 +14,11 @@ from streamlit import session_state as ss
 
 
 # Declare and initialize the layout session variable.
-if 'layout' not in ss:
-	ss.layout = 'wide'
+if "layout_preference" not in st.session_state:
+    st.session_state["layout_preference"] = "wide"
+
+st.set_page_config(page_title="TripCostPro", layout=st.session_state["layout_preference"])
+
 
 def create_trip_calculator(all_prices):
     st.markdown("## Trip planner")

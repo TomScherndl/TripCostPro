@@ -1,4 +1,6 @@
 from dashboarding.models.TabNames import TabNames
+import streamlit as st
+import logging
 
 OVERVIEW_SIDEBAR_CONTENT = """
 ## HELP: Overview Dashboard
@@ -62,3 +64,15 @@ This command center allows users to manage and dynamically update vehicle data, 
 
 *Note: All modifications made within this module are instantly reflected and utilized in the Trip Planner calculations.*
 """
+
+def switch_layout():  
+        
+    st.sidebar.markdown("—")
+    st.sidebar.title("Layout Settings")
+    layout_preference = st.sidebar.radio("Choose Layout Type:", ("wide", "centered"),
+                                         index=0 if st.session_state["layout_preference"] == "wide" else 1
+    )
+    if layout_preference != st.session_state["layout_preference"]:
+        st.session_state["layout_preference"] = layout_preference
+        logging.info("Try to rerun!")
+        st.rerun()

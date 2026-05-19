@@ -71,7 +71,7 @@ def create_dashboard():
 def initialize_session():
     # hide sidebar on first load
     st.set_page_config(initial_sidebar_state="collapsed")
-    
+
     st.session_state.active_tab = TabNames.OVERVIEW
     if "time_range" not in st.session_state:
         st.session_state.time_range = [

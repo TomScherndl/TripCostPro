@@ -2,7 +2,7 @@
     color: darkblue
 }
 .st-emotion-cache-1w723zb {
-	max-width: 100%;
+	max-width: 100% !important;
 }
 div[data-testid="stMetric"] > div {
     padding: 20px;             /* Padding around the content inside the card */

@@ -1,7 +1,9 @@
 .st-bn:hover{
     color: darkblue
 }
-
+.st-emotion-cache-1w723zb {
+	max-width: 100%;
+}
 div[data-testid="stMetric"] > div {
     padding: 20px;             /* Padding around the content inside the card */
     border-radius: 25px;       /* Softly rounded corners */
